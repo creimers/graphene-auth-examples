@@ -1,9 +1,12 @@
-from rest_framework_jwt.serializers import JSONWebTokenSerializer
+from djoser import settings as djoser_settings
 
 import graphene
 from graphene import relay
 
+from rest_framework_jwt.serializers import JSONWebTokenSerializer
+
 from .models import User
+from .utils import send_activation_email
 
 
 class Register(relay.ClientIDMutation):
@@ -28,6 +31,8 @@ class Register(relay.ClientIDMutation):
                     password=password,
                     is_active=False
                     )
+                if djoser_settings.get('SEND_ACTIVATION_EMAIL'):
+                    send_activation_email(user, context)
                 return Register(success=bool(user.id))
             except:
                 errors = ["email", "Email already registered."]

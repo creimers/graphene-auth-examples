@@ -157,3 +157,13 @@ LANGUAGES = [
 GRAPHENE = {
     'SCHEMA': 'config.schema.schema'
 }
+
+DJOSER = {
+    'DOMAIN': os.environ.get('DJANGO_DJOSER_DOMAIN', 'bobdylan.local'),
+    'SITE_NAME': os.environ.get('DJANGO_DJOSER_SITE_NAME', 'my site'),
+    'PASSWORD_RESET_CONFIRM_URL': '?action=set-new-password&uid={uid}&token={token}',
+    'ACTIVATION_URL': '?action=activate&uid={uid}&token={token}',
+    'SEND_ACTIVATION_EMAIL': True,
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

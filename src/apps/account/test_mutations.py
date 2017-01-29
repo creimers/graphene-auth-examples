@@ -5,7 +5,8 @@ from test_fixtures.users import user
 
 
 @pytest.mark.django_db
-def test_register_mutation_success():
+def test_register_mutation_success(rf):
+    request = rf.request()
     query = """
     mutation {
       register(
@@ -27,13 +28,14 @@ def test_register_mutation_success():
                 'errors': None
                 }
             }
-    result = schema.execute(query)
+    result = schema.execute(query, context_value=request)
     assert not result.errors
     assert result.data == expectation
 
 
 @pytest.mark.django_db
-def test_register_mutation_password_error():
+def test_register_mutation_password_error(rf):
+    request = rf.request()
     query = """
     mutation {
       register(
@@ -55,13 +57,14 @@ def test_register_mutation_password_error():
                 'errors': ['password', "Passwords don't match."]
                 }
             }
-    result = schema.execute(query)
+    result = schema.execute(query, context_value=request)
     assert not result.errors
     assert result.data == expectation
 
 
 @pytest.mark.django_db
-def test_register_mutation_user_error():
+def test_register_mutation_user_error(rf):
+    request = rf.request()
     query = """
     mutation {
       register(
@@ -84,7 +87,7 @@ def test_register_mutation_user_error():
                 }
             }
     schema.execute(query)
-    second_result = schema.execute(query)
+    second_result = schema.execute(query, context_value=request)
     assert not second_result.errors
     assert second_result.data == expectation
 
