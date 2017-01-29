@@ -1,4 +1,5 @@
 import pytest
+from djoser import utils
 
 from config.schema import schema
 from test_fixtures.users import user
@@ -90,6 +91,43 @@ def test_register_mutation_user_error(rf):
     second_result = schema.execute(query, context_value=request)
     assert not second_result.errors
     assert second_result.data == expectation
+
+
+@pytest.mark.django_db
+def test_activation_success(user, rf):
+    request = rf.request()
+    user.is_active = False
+    user.save()
+    email_factory = utils.UserActivationEmailFactory.from_request(
+        request, user=user)
+    context = email_factory.get_context()
+    token = context.get('token')
+    uid = context.get('uid')
+
+    query = """
+    mutation {
+        activate(
+            input: {
+                token: "%s",
+                uid: "%s",
+            }
+        ) {
+            success
+            errors
+        }
+    }
+    """ % (token, uid)
+
+    expectation = {
+            'activate': {
+                'success': True,
+                'errors': None
+                }
+            }
+
+    result = schema.execute(query, context_value=request)
+    assert not result.errors
+    assert result.data == expectation
 
 
 @pytest.mark.django_db

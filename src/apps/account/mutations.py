@@ -1,4 +1,8 @@
+from django.contrib.auth.tokens import default_token_generator
+
 from djoser import settings as djoser_settings
+from djoser.serializers import ActivationSerializer
+from djoser.utils import decode_uid
 
 import graphene
 from graphene import relay
@@ -41,6 +45,31 @@ class Register(relay.ClientIDMutation):
         return Register(success=False, errors=errors)
 
 
+class Activate(relay.ClientIDMutation):
+    class Input:
+        token = graphene.String(required=True)
+        uid = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+
+    @classmethod
+    def mutate_and_get_payload(cls, input, context, info):
+        token = input.get('token')
+        uid = input.get('uid')
+
+        try:
+            uid = decode_uid(uid)
+            user = User.objects.get(pk=uid)
+            if not default_token_generator.check_token(user, token):
+                return Activate(success=False, errors=['stale token'])
+                pass
+            return Activate(success=True, errors=None)
+
+        except:
+            return Activate(success=False, errors=['unknown user'])
+
+
 class Login(relay.ClientIDMutation):
     class Input:
         email = graphene.String(required=True)
@@ -49,6 +78,7 @@ class Login(relay.ClientIDMutation):
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
     token = graphene.String()
+    # TODO: should return user!
 
     @classmethod
     def mutate_and_get_payload(cls, input, context, info):
