@@ -16,3 +16,6 @@
 
 ### production
 * `docker-compose -f docker-compose.yml -f docker-compose-production.yml up -d`
+
+### test
+`docker-compose run django py.test -s ./src`
