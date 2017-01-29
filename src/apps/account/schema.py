@@ -14,6 +14,7 @@ class User(DjangoObjectType):
         filter_fields = {
             'id': ['exact', ]
             }
+        exclude_fields = ('password', )
         interfaces = (relay.Node, )
 
 

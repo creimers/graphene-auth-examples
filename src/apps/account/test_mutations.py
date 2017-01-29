@@ -144,6 +144,9 @@ def test_login_mutation_success(user, rf):
             success
             errors
             token
+            user {
+                email
+            }
         }
     }
     """

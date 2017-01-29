@@ -8,7 +8,8 @@ from graphene import relay
 
 from rest_framework_jwt.serializers import JSONWebTokenSerializer
 
-from .models import User
+from .models import User as UserModel
+from .schema import User
 from .utils import send_activation_email
 
 
@@ -32,7 +33,7 @@ class Register(relay.ClientIDMutation):
 
         if password == password_repeat:
             try:
-                user = User.objects.create(
+                user = UserModel.objects.create(
                     email=email,
                     password=password,
                     is_active=False
@@ -65,7 +66,7 @@ class Activate(relay.ClientIDMutation):
 
         try:
             uid = decode_uid(uid)
-            user = User.objects.get(pk=uid)
+            user = UserModel.objects.get(pk=uid)
             if not default_token_generator.check_token(user, token):
                 return Activate(success=False, errors=['stale token'])
                 pass
@@ -86,14 +87,15 @@ class Login(relay.ClientIDMutation):
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
     token = graphene.String()
-    # TODO: should return user object!
+    user = graphene.Field(User)
 
     @classmethod
     def mutate_and_get_payload(cls, input, context, info):
         serializer = JSONWebTokenSerializer(data=input)
         if serializer.is_valid():
             token = serializer.object['token']
-            return Login(success=True, token=token, errors=None)
+            user = serializer.object['user']
+            return Login(success=True, user=user, token=token, errors=None)
         else:
             return Login(
                 success=False,
