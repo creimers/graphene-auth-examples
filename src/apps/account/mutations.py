@@ -1,7 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 
 from djoser import settings as djoser_settings
-from djoser.serializers import ActivationSerializer
 from djoser.utils import decode_uid
 
 import graphene
@@ -14,6 +13,9 @@ from .utils import send_activation_email
 
 
 class Register(relay.ClientIDMutation):
+    """
+    Mutation to register a user
+    """
     class Input:
         email = graphene.String(required=True)
         password = graphene.String(required=True)
@@ -46,6 +48,9 @@ class Register(relay.ClientIDMutation):
 
 
 class Activate(relay.ClientIDMutation):
+    """
+    Mutation to activate a user's registration
+    """
     class Input:
         token = graphene.String(required=True)
         uid = graphene.String(required=True)
@@ -71,6 +76,9 @@ class Activate(relay.ClientIDMutation):
 
 
 class Login(relay.ClientIDMutation):
+    """
+    Mutation to login a user
+    """
     class Input:
         email = graphene.String(required=True)
         password = graphene.String(required=True)
@@ -78,7 +86,7 @@ class Login(relay.ClientIDMutation):
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
     token = graphene.String()
-    # TODO: should return user!
+    # TODO: should return user object!
 
     @classmethod
     def mutate_and_get_payload(cls, input, context, info):
