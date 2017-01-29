@@ -10,7 +10,7 @@ class Register(relay.ClientIDMutation):
         password = graphene.String(required=True)
         password_repeat = graphene.String(required=True)
 
-    ok = graphene.Boolean()
+    success = graphene.Boolean()
 
     @classmethod
     def mutate_and_get_payload(cls, input, context, info):
@@ -21,7 +21,7 @@ class Register(relay.ClientIDMutation):
         if password == password_repeat:
             try:
                 user = User.objects.create(email=email, password=password)
-                return Register(ok=bool(user.id))
-            except Exception as e:
+                return Register(success=bool(user.id))
+            except:
                 pass
-        return Register(ok=False)
+        return Register(success=False)

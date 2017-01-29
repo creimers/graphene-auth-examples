@@ -14,10 +14,10 @@ def test_register_mutation_success():
             passwordRepeat: "123"
         }
       ) {
-        ok
+        success
       }
     }
     """
     result = schema.execute(query)
     assert not result.errors
-    assert result.data['register']['ok']
+    assert result.data['register']['success']
