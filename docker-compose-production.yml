@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+  django:
+    restart: always
+    environment:
+      DJANGO_SETTINGS_MODULE: config.production
+
+  postgres:
+    restart: always

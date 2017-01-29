@@ -1,0 +1,32 @@
+version: '2'
+
+volumes:
+  postgres_data: {}
+  postgres_backup: {}
+
+services:
+  django:
+    build:
+      context: .
+
+    env_file: .env
+
+    ports:
+      - "8000:8000"
+
+    links:
+      - postgres
+
+    volumes:
+      - ./src/:/project/src/
+      - ./backups:/backups
+
+    command: /project/bin/uwsgi.sh
+
+  postgres:
+    env_file: .env
+    image: mdillon/postgis
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_backup:/backups

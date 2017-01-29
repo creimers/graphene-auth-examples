@@ -1,0 +1,26 @@
+Django==1.10.5
+
+# channels 
+channels
+asgi-redis
+daphne
+
+# REST
+djangorestframework==3.5.3
+djangorestframework-filters==0.8.0
+djangorestframework-jwt==1.9.0
+djoser==0.5.1
+django-extra-fields
+graphene==1.1.3
+graphene-django==1.2.1
+
+Pillow==3.2.0
+
+# dev
+ipdb
+
+uWSGI==2.0.12
+dj-database-url==0.4.1
+psycopg2==2.6.1
+
+pytest-django==3.1.2
