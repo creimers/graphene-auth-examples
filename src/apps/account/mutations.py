@@ -11,6 +11,7 @@ class Register(relay.ClientIDMutation):
         password_repeat = graphene.String(required=True)
 
     success = graphene.Boolean()
+    errors = graphene.List(graphene.String)
 
     @classmethod
     def mutate_and_get_payload(cls, input, context, info):
@@ -23,5 +24,7 @@ class Register(relay.ClientIDMutation):
                 user = User.objects.create(email=email, password=password)
                 return Register(success=bool(user.id))
             except:
-                pass
-        return Register(success=False)
+                errors = ["email", "Email already registered."]
+                return Register(success=False, errors=errors)
+        errors = ["password", "Passwords don't match."]
+        return Register(success=False, errors=errors)
