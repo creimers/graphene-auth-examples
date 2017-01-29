@@ -45,9 +45,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
-    'apps.account',
-
+    'rest_framework',
+    'rest_framework_jwt',
+    'djoser',
     'graphene_django',
+
+    'apps.account',
 ]
 
 MIDDLEWARE = [

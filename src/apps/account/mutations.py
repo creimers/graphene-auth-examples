@@ -1,3 +1,5 @@
+from rest_framework_jwt.serializers import JSONWebTokenSerializer
+
 import graphene
 from graphene import relay
 
@@ -21,10 +23,37 @@ class Register(relay.ClientIDMutation):
 
         if password == password_repeat:
             try:
-                user = User.objects.create(email=email, password=password)
+                user = User.objects.create(
+                    email=email,
+                    password=password,
+                    is_active=False
+                    )
                 return Register(success=bool(user.id))
             except:
                 errors = ["email", "Email already registered."]
                 return Register(success=False, errors=errors)
         errors = ["password", "Passwords don't match."]
         return Register(success=False, errors=errors)
+
+
+class Login(relay.ClientIDMutation):
+    class Input:
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+    token = graphene.String()
+
+    @classmethod
+    def mutate_and_get_payload(cls, input, context, info):
+        serializer = JSONWebTokenSerializer(data=input)
+        if serializer.is_valid():
+            token = serializer.object['token']
+            return Login(success=True, token=token, errors=None)
+        else:
+            return Login(
+                success=False,
+                token=None,
+                errors=['email', 'Unable to login with provided credentials.']
+                )
