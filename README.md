@@ -13,6 +13,16 @@ Should anyone stumble upon this, I'd be very happy to receive some feedback.
 * docker-compose
 * py.test
 
+## mutations
+- [x] register
+- [x] activate account
+- [x] login
+- [ ] reauthenticate
+- [ ] password reset
+- [ ] set new password
+- [ ] profile update
+- [ ] delete account
+
 ## main commands
 
 ### development
