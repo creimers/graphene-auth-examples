@@ -25,7 +25,8 @@ class User(DjangoObjectType):
 
 class UserQuery(AbstractType):
     """
-    how does this work?
+    what is an abstract type?
+    http://docs.graphene-python.org/en/latest/types/abstracttypes/
     """
     user = relay.Node.Field(User)
     users = DjangoFilterConnectionField(User)
