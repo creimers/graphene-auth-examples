@@ -1,6 +1,12 @@
 import graphene
 
-from apps.account.mutations import Activate, DeleteAccount, Login, Register
+from apps.account.mutations import (
+    Activate,
+    DeleteAccount,
+    Login,
+    RefreshToken,
+    Register,
+    )
 from apps.account.schema import User
 from graphene_django.filter import DjangoFilterConnectionField
 
@@ -21,6 +27,7 @@ class Mutation(graphene.ObjectType):
     login = Login.Field()
     register = Register.Field()
     deleteAccount = DeleteAccount.Field()
+    refreshToken = RefreshToken.Field()
 
 
 schema = graphene.Schema(query=RootQuery, mutation=Mutation)

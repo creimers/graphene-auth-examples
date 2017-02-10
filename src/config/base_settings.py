@@ -168,4 +168,8 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': True,
 }
 
+JWT_AUTH = {
+    'JWT_ALLOW_REFRESH': True,
+    }
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

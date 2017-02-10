@@ -17,7 +17,7 @@ Should anyone stumble upon this, I'd be very happy to receive some feedback.
 - [x] register
 - [x] activate account
 - [x] login
-- [ ] reauthenticate
+- [x] reauthenticate
 - [ ] password reset
 - [ ] set new password
 - [ ] profile update

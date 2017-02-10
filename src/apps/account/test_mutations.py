@@ -198,6 +198,28 @@ def test_login_mutation_error(rf):
 # ##############
 # REAUTHENTICATE
 # ##############
+@pytest.mark.django_db
+def test_refresh_token_success(client, token):
+    """
+    error because authenticated as wrong user
+    """
+    query = """
+    mutation {
+        refreshToken(
+            input: {
+                token: "%s",
+            }
+        ) {
+            success
+            errors
+            token
+        }
+    }
+    """ % token.split(' ')[1]
+    query = "/graphql?query=%s" % query
+    response = client.post(query, HTTP_AUTHORIZATION=token)
+    result = response.json()
+    assert type(result['data']['refreshToken']['token']) is str
 
 # ##############
 # PASSWORD RESET

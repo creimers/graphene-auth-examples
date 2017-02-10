@@ -6,7 +6,10 @@ from djoser.utils import decode_uid
 import graphene
 from graphene import relay
 
-from rest_framework_jwt.serializers import JSONWebTokenSerializer
+from rest_framework_jwt.serializers import (
+    JSONWebTokenSerializer,
+    RefreshJSONWebTokenSerializer
+    )
 
 from .models import User as UserModel
 from .schema import User
@@ -98,6 +101,34 @@ class Login(relay.ClientIDMutation):
             return Login(success=True, user=user, token=token, errors=None)
         else:
             return Login(
+                success=False,
+                token=None,
+                errors=['email', 'Unable to login with provided credentials.']
+                )
+
+
+class RefreshToken(relay.ClientIDMutation):
+    """
+    Mutation to reauthenticate a user
+    """
+    class Input:
+        token = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+    token = graphene.String()
+
+    @classmethod
+    def mutate_and_get_payload(cls, input, context, info):
+        serializer = RefreshJSONWebTokenSerializer(data=input)
+        if serializer.is_valid():
+            return RefreshToken(
+                success=True,
+                token=serializer.object['token'],
+                errors=None
+                )
+        else:
+            return RefreshToken(
                 success=False,
                 token=None,
                 errors=['email', 'Unable to login with provided credentials.']
