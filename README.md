@@ -18,8 +18,8 @@ Should anyone stumble upon this, I'd be very happy to receive some feedback.
 - [x] activate account
 - [x] login
 - [x] reauthenticate
-- [ ] password reset
-- [ ] set new password
+- [x] password reset
+- [x] password reset confirm
 - [ ] profile update
 - [x] delete account
 

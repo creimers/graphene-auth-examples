@@ -13,6 +13,7 @@ from rest_framework_jwt.serializers import (
 
 from .models import User as UserModel
 from .schema import User
+from .serializers import PasswordResetConfirmRetypeSerializer
 from .utils import send_activation_email, send_password_reset_email
 
 
@@ -153,6 +154,33 @@ class ResetPassword(relay.ClientIDMutation):
             return ResetPassword(success=True)
         except:
             return ResetPassword(success=True)
+
+
+class ResetPasswordConfirm(relay.ClientIDMutation):
+    """
+    Mutation for requesting a password reset email
+    """
+
+    class Input:
+        uid = graphene.String(required=True)
+        token = graphene.String(required=True)
+        email = graphene.String(required=True)
+        new_password = graphene.String(required=True)
+        re_new_password = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+
+    @classmethod
+    def mutate_and_get_payload(cls, input, context, info):
+        serializer = PasswordResetConfirmRetypeSerializer(data=input)
+        if serializer.is_valid():
+            serializer.user.set_password(serializer.data['new_password'])
+            serializer.user.save()
+            return ResetPasswordConfirm(success=True, errors=None)
+        else:
+            return ResetPasswordConfirm(
+                success=False, errors=[serializer.errors])
 
 
 class DeleteAccount(relay.ClientIDMutation):

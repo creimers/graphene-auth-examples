@@ -1,5 +1,6 @@
 from config.schema import schema
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from djoser import utils
 import pytest
 from test_fixtures.users import token, user
@@ -245,9 +246,127 @@ def test_reset_password_success(client):
     result = response.json()
     assert type(result['data']['resetPassword']['success'])
 
-# ################
-# SET NEW PASSWORD
-# ################
+# ######################
+# PASSWORD RESET CONFIRM
+# ######################
+@pytest.mark.django_db
+def test_reset_password_confirm_success(client, user):
+    """
+    successfully confirm a password reset
+    """
+
+    uid = utils.encode_uid(user.pk)
+    token = default_token_generator.make_token(user)
+
+    query = """
+    mutation {
+        resetPasswordConfirm(
+            input: {
+                email: "eins@zwei.de"
+                uid: "%s"
+                token: "%s"
+                newPassword: "666"
+                reNewPassword: "666"
+            }
+        ) {
+            success
+        }
+    }
+    """ % (uid, token)
+    query = "/graphql?query=%s" % query
+    response = client.post(query)
+    result = response.json()
+    assert type(result['data']['resetPasswordConfirm']['success'])
+
+
+@pytest.mark.django_db
+def test_reset_password_confirm_password_error(client, user):
+    """
+    confirm password reset error password missmatch
+    """
+
+    uid = utils.encode_uid(user.pk)
+    token = default_token_generator.make_token(user)
+
+    query = """
+    mutation {
+        resetPasswordConfirm(
+            input: {
+                email: "eins@zwei.de"
+                uid: "%s"
+                token: "%s"
+                newPassword: "666"
+                reNewPassword: "6667"
+            }
+        ) {
+            success
+        }
+    }
+    """ % (uid, token)
+    query = "/graphql?query=%s" % query
+    response = client.post(query)
+    result = response.json()
+    assert not result['data']['resetPasswordConfirm']['success']
+
+
+@pytest.mark.django_db
+def test_reset_password_confirm_token_error(client, user):
+    """
+    confirm password reset token error
+    """
+
+    uid = utils.encode_uid(user.pk)
+    token = "Angela Merkel"
+
+    query = """
+    mutation {
+        resetPasswordConfirm(
+            input: {
+                email: "eins@zwei.de"
+                uid: "%s"
+                token: "%s"
+                newPassword: "666"
+                reNewPassword: "666"
+            }
+        ) {
+            success
+        }
+    }
+    """ % (uid, token)
+    query = "/graphql?query=%s" % query
+    response = client.post(query)
+    result = response.json()
+    assert not result['data']['resetPasswordConfirm']['success']
+
+
+@pytest.mark.django_db
+def test_reset_password_confirm_uid_error(client, user):
+    """
+    confirm password reset uid error
+    """
+
+    uid = "Angela Merkel"
+    token = default_token_generator.make_token(user)
+
+    query = """
+    mutation {
+        resetPasswordConfirm(
+            input: {
+                email: "eins@zwei.de"
+                uid: "%s"
+                token: "%s"
+                newPassword: "666"
+                reNewPassword: "666"
+            }
+        ) {
+            success
+        }
+    }
+    """ % (uid, token)
+    query = "/graphql?query=%s" % query
+    response = client.post(query)
+    result = response.json()
+    assert not result['data']['resetPasswordConfirm']['success']
 
 # ################
 # PROFILE UPDATE
