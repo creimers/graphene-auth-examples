@@ -102,3 +102,29 @@ class Login(relay.ClientIDMutation):
                 token=None,
                 errors=['email', 'Unable to login with provided credentials.']
                 )
+
+
+class DeleteAccount(relay.ClientIDMutation):
+    """
+    Mutation to delete an account
+    """
+    class Input:
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    errors = graphene.List(graphene.String)
+
+    @classmethod
+    def mutate_and_get_payload(cls, input, context, info):
+        is_authenticated = context.user.is_authenticated()
+        if not is_authenticated:
+            errors = ['unauthenticated']
+        elif is_authenticated and not input['email'] == context.user.email:
+            errors = ['forbidden']
+        elif not context.user.check_password(input['password']):
+            errors = ['wrong password']
+        else:
+            context.user.delete()
+            return DeleteAccount(success=True)
+        return DeleteAccount(success=False, errors=errors)

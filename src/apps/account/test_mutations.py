@@ -1,9 +1,16 @@
-import pytest
-from djoser import utils
-
 from config.schema import schema
-from test_fixtures.users import user
+from django.contrib.auth import get_user_model
+from djoser import utils
+import pytest
+from test_fixtures.users import token, user
 
+
+User = get_user_model()
+
+
+# ########
+# REGISTER
+# ########
 
 @pytest.mark.django_db
 def test_register_mutation_success(rf):
@@ -93,6 +100,10 @@ def test_register_mutation_user_error(rf):
     assert second_result.data == expectation
 
 
+# ########
+# ACTIVATE
+# ########
+
 @pytest.mark.django_db
 def test_activation_success(user, rf):
     request = rf.request()
@@ -129,6 +140,10 @@ def test_activation_success(user, rf):
     assert not result.errors
     assert result.data == expectation
 
+
+# ########
+# LOGIN
+# ########
 
 @pytest.mark.django_db
 def test_login_mutation_success(user, rf):
@@ -178,3 +193,124 @@ def test_login_mutation_error(rf):
     assert not result.errors
     assert result.data['login']['token'] is None
     assert result.data['login']['success'] is False
+
+
+# ##############
+# REAUTHENTICATE
+# ##############
+
+# ##############
+# PASSWORD RESET
+# ##############
+
+# ################
+# SET NEW PASSWORD
+# ################
+
+# ################
+# PROFILE UPDATE
+# ################
+
+# ################
+# DELETE ACCOUNT
+# ################
+@pytest.mark.django_db
+def test_delete_account_unauthenticated_error(client):
+    """
+    error because unauthenticated
+    """
+    query = """
+    mutation {
+        deleteAccount(
+            input: {
+                email: "eins@zwei.de",
+                password: "123"
+            }
+        ) {
+            success
+            errors
+        }
+    }
+    """
+    query = "/graphql?query=%s" % query
+    response = client.post(query)
+    result = response.json()
+    assert response.status_code == 200
+    assert not result['data']['deleteAccount']['success']
+
+
+@pytest.mark.django_db
+def test_delete_account_authenticated_user_error(client, token):
+    """
+    error because authenticated as wrong user
+    """
+    query = """
+    mutation {
+        deleteAccount(
+            input: {
+                email: "wrong@user.de",
+                password: "123"
+            }
+        ) {
+            success
+            errors
+        }
+    }
+    """
+    query = "/graphql?query=%s" % query
+    response = client.post(query, HTTP_AUTHORIZATION=token)
+    result = response.json()
+    assert response.status_code == 200
+    assert not result['data']['deleteAccount']['success']
+
+
+@pytest.mark.django_db
+def test_delete_account_authenticated_password_error(client, token):
+    """
+    error because authenticated user provides wrong password
+    """
+    query = """
+    mutation {
+        deleteAccount(
+            input: {
+                email: "eins@zwei.de",
+                password: "wrong_password"
+            }
+        ) {
+            success
+            errors
+        }
+    }
+    """
+    query = "/graphql?query=%s" % query
+    response = client.post(query, HTTP_AUTHORIZATION=token)
+    result = response.json()
+    assert response.status_code == 200
+    assert not result['data']['deleteAccount']['success']
+    assert result['data']['deleteAccount']['errors'] == ['wrong password']
+
+
+@pytest.mark.django_db
+def test_delete_account_authenticated_success(client, token, user):
+    """
+    authenticated user can successfully delete their account
+    """
+    query = """
+    mutation {
+        deleteAccount(
+            input: {
+                email: "eins@zwei.de",
+                password: "123"
+            }
+        ) {
+            success
+            errors
+        }
+    }
+    """
+    query = "/graphql?query=%s" % query
+    response = client.post(query, HTTP_AUTHORIZATION=token)
+    result = response.json()
+    assert response.status_code == 200
+    assert result['data']['deleteAccount']['success']
+    assert not User.objects.filter(email=user.email).count()

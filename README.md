@@ -21,7 +21,7 @@ Should anyone stumble upon this, I'd be very happy to receive some feedback.
 - [ ] password reset
 - [ ] set new password
 - [ ] profile update
-- [ ] delete account
+- [x] delete account
 
 ## main commands
 

@@ -21,4 +21,4 @@ def token(user):
         data={'email': user.email, 'password': '123'})
     serializer.is_valid()
     token = serializer.object['token']
-    return token
+    return "JWT %s" % token
