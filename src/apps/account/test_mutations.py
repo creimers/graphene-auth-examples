@@ -201,7 +201,7 @@ def test_login_mutation_error(rf):
 @pytest.mark.django_db
 def test_refresh_token_success(client, token):
     """
-    error because authenticated as wrong user
+    successfully refresh JWT
     """
     query = """
     mutation {
@@ -224,6 +224,26 @@ def test_refresh_token_success(client, token):
 # ##############
 # PASSWORD RESET
 # ##############
+@pytest.mark.django_db
+def test_reset_password_success(client):
+    """
+    successfully request a password reset
+    """
+    query = """
+    mutation {
+        resetPassword(
+            input: {
+                email: "eins@zwei.de"
+            }
+        ) {
+            success
+        }
+    }
+    """
+    query = "/graphql?query=%s" % query
+    response = client.post(query)
+    result = response.json()
+    assert type(result['data']['resetPassword']['success'])
 
 # ################
 # SET NEW PASSWORD

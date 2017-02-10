@@ -13,7 +13,7 @@ from rest_framework_jwt.serializers import (
 
 from .models import User as UserModel
 from .schema import User
-from .utils import send_activation_email
+from .utils import send_activation_email, send_password_reset_email
 
 
 class Register(relay.ClientIDMutation):
@@ -133,6 +133,26 @@ class RefreshToken(relay.ClientIDMutation):
                 token=None,
                 errors=['email', 'Unable to login with provided credentials.']
                 )
+
+
+class ResetPassword(relay.ClientIDMutation):
+    """
+    Mutation for requesting a password reset email
+    """
+
+    class Input:
+        email = graphene.String(required=True)
+
+    success = graphene.Boolean()
+
+    @classmethod
+    def mutate_and_get_payload(cls, input, context, info):
+        try:
+            user = User.objects.get(email=input.get('user'))
+            send_password_reset_email(context, user)
+            return ResetPassword(success=True)
+        except:
+            return ResetPassword(success=True)
 
 
 class DeleteAccount(relay.ClientIDMutation):
