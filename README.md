@@ -4,6 +4,8 @@ In this repo, I'm trying to figure out how to do authentication and authorizatio
 
 When I started, I was especially interested in mutation examples for user registration, account activation, login etc.
 
+Coming from REST land, I heavily inherited from [drf-jwt](https://github.com/GetBlimp/django-rest-framework-jwt) and [djoser](https://github.com/sunscrapers/djoser).
+
 Should anyone stumble upon this, I'd be very happy to receive some feedback.
 
 ## what's inside.
