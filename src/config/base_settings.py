@@ -29,6 +29,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CORS_ORIGIN_WHITELIST = (
+    'localhost:3000'
+)
+
 SITE_ID = 1
 
 AUTH_USER_MODEL = 'account.User'
@@ -44,6 +48,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
+    'corsheaders',
 
     'rest_framework',
     'rest_framework_jwt',
@@ -62,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 
     'apps.account.middleware.JWTAuthenticationMiddleware',
 ]
