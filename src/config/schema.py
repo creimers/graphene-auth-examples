@@ -9,14 +9,12 @@ from apps.account.mutations import (
     ResetPassword,
     ResetPasswordConfirm,
     )
-from apps.account.schema import User
-from graphene_django.filter import DjangoFilterConnectionField
+from apps.account.schema import User, Viewer
 
 
 class RootQuery(graphene.ObjectType):
-    viewer = graphene.Field(User)
+    viewer = graphene.Field(Viewer)
     node = graphene.relay.Node.Field()
-    users = DjangoFilterConnectionField(User)
 
     def resolve_viewer(self, args, context, info):
         if context.user.is_authenticated():

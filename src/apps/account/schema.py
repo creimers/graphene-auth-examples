@@ -1,4 +1,4 @@
-from graphene import relay, AbstractType, String, Boolean
+from graphene import relay, AbstractType, ObjectType, Field
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 
@@ -14,13 +14,8 @@ class User(DjangoObjectType):
         filter_fields = {
             'email': ['exact', ]
             }
-        exclude_fields = ('password', )
+        exclude_fields = ('password', 'is_superuser', )
         interfaces = (relay.Node, )
-
-    is_logged_in = Boolean()
-
-    def resolve_is_logged_in(self, args, context, info):
-        return context.user.is_authenticated()
 
 
 class UserQuery(AbstractType):
@@ -30,3 +25,12 @@ class UserQuery(AbstractType):
     """
     user = relay.Node.Field(User)
     users = DjangoFilterConnectionField(User)
+
+
+class Viewer(ObjectType):
+    user = Field(User)
+
+    def resolve_user(self, args, context, info):
+        if context.user.is_authenticated():
+            return context.user
+        return None
