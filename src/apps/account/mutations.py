@@ -39,9 +39,10 @@ class Register(relay.ClientIDMutation):
             try:
                 user = UserModel.objects.create(
                     email=email,
-                    password=password,
                     is_active=False
                     )
+                user.set_password(password)
+                user.save()
                 if djoser_settings.get('SEND_ACTIVATION_EMAIL'):
                     send_activation_email(user, context)
                 return Register(success=bool(user.id))
@@ -74,6 +75,8 @@ class Activate(relay.ClientIDMutation):
             if not default_token_generator.check_token(user, token):
                 return Activate(success=False, errors=['stale token'])
                 pass
+            user.is_active = True
+            user.save()
             return Activate(success=True, errors=None)
 
         except:
@@ -95,7 +98,8 @@ class Login(relay.ClientIDMutation):
 
     @classmethod
     def mutate_and_get_payload(cls, input, context, info):
-        serializer = JSONWebTokenSerializer(data=input)
+        user = {'email': input['email'], 'password': input['password']}
+        serializer = JSONWebTokenSerializer(data=user)
         if serializer.is_valid():
             token = serializer.object['token']
             user = serializer.object['user']
