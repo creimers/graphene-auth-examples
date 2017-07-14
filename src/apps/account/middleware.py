@@ -38,7 +38,8 @@ class JWTAuthenticationMiddleware(object):
     def __call__(self, request):
         # Code to be executed for each request before
         # the view (and later middleware) are called.
-        request.user = SimpleLazyObject(lambda : get_user_jwt(request))
+        if not request.user.is_authenticated():
+            request.user = SimpleLazyObject(lambda : get_user_jwt(request))
 
         response = self.get_response(request)
 
