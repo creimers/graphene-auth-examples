@@ -1,4 +1,4 @@
-# django graphene authentiation example - work in progress
+# django graphene authentication example - work in progress
 
 In this repo, I'm trying to figure out how to do authentication and authorization with graphql and [graphene-django](https://github.com/graphql-python/graphene-django).
 
