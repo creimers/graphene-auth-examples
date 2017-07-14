@@ -168,10 +168,10 @@ GRAPHENE = {
 }
 
 DJOSER = {
-    'DOMAIN': os.environ.get('DJANGO_DJOSER_DOMAIN', 'bobdylan.local'),
+    'DOMAIN': os.environ.get('DJANGO_DJOSER_DOMAIN', 'localhost:3000'),
     'SITE_NAME': os.environ.get('DJANGO_DJOSER_SITE_NAME', 'my site'),
     'PASSWORD_RESET_CONFIRM_URL': '?action=set-new-password&uid={uid}&token={token}',
-    'ACTIVATION_URL': '?action=activate&uid={uid}&token={token}',
+    'ACTIVATION_URL': 'activate?uid={uid}&token={token}',
     'SEND_ACTIVATION_EMAIL': True,
 }
 
