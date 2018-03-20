@@ -25,7 +25,7 @@ services:
 
   postgres:
     env_file: .env
-    image: mdillon/postgis
+    image: postgres:9.6
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
