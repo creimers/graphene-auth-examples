@@ -1,6 +1,6 @@
 from graphene import relay, AbstractType, ObjectType, Field
-from graphene_django import DjangoObjectType
-from graphene_django.filter import DjangoFilterConnectionField
+from graphene_django.types import DjangoObjectType
+from graphene_django.filter.fields import DjangoFilterConnectionField
 
 from .models import User as UserModel
 
@@ -30,7 +30,7 @@ class UserQuery(AbstractType):
 class Viewer(ObjectType):
     user = Field(User)
 
-    def resolve_user(self, args, context, info):
-        if context.user.is_authenticated():
-            return context.user
+    def resolve_user(self, info, **kwargs):
+        if info.context.user.is_authenticated():
+            return info.context.user
         return None

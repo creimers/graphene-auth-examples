@@ -1,8 +1,12 @@
-from config.schema import schema
+import pytest
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from djoser.email import ActivationEmail, PasswordResetEmail
+
 from djoser import utils
-import pytest
+
+from config.schema import schema
 from test_fixtures.users import token, user
 
 
@@ -19,12 +23,11 @@ def test_register_mutation_success(rf):
     query = """
     mutation {
       register(
-        input: {
             email: "affe@giraffe.de",
             password: "123",
             passwordRepeat: "123"
-        }
-      ) {
+        )
+      {
         success
         errors
       }
@@ -48,11 +51,9 @@ def test_register_mutation_password_error(rf):
     query = """
     mutation {
       register(
-        input: {
-            email: "affe@giraffe.de",
-            password: "123",
-            passwordRepeat: "1234"
-        }
+        email: "affe@giraffe.de",
+        password: "123",
+        passwordRepeat: "1234"
       ) {
         success
         errors
@@ -77,11 +78,9 @@ def test_register_mutation_user_error(rf):
     query = """
     mutation {
       register(
-        input: {
-            email: "affe@giraffe.de",
-            password: "123",
-            passwordRepeat: "123"
-        }
+        email: "affe@giraffe.de",
+        password: "123",
+        passwordRepeat: "123"
       ) {
         success
         errors
@@ -110,19 +109,17 @@ def test_activation_success(user, rf):
     request = rf.request()
     user.is_active = False
     user.save()
-    email_factory = utils.UserActivationEmailFactory.from_request(
-        request, user=user)
-    context = email_factory.get_context()
+    email_factory = ActivationEmail(
+        request, {'user': user})
+    context = email_factory.get_context_data()
     token = context.get('token')
     uid = context.get('uid')
 
     query = """
     mutation {
         activate(
-            input: {
-                token: "%s",
-                uid: "%s",
-            }
+            token: "%s",
+            uid: "%s",
         ) {
             success
             errors
@@ -141,6 +138,11 @@ def test_activation_success(user, rf):
     assert not result.errors
     assert result.data == expectation
 
+    user.refresh_from_db()
+    assert user.is_active is True
+
+    # TODO: test error case
+
 
 # ########
 # LOGIN
@@ -152,10 +154,8 @@ def test_login_mutation_success(user, rf):
     query = """
     mutation {
         login(
-            input: {
-                email: "eins@zwei.de",
-                password: "123"
-            }
+            email: "eins@zwei.de",
+            password: "123"
         ) {
             success
             errors
@@ -168,7 +168,7 @@ def test_login_mutation_success(user, rf):
     """
 
     result = schema.execute(query, context_value=request)
-    assert not result.errors
+    assert result.data['login']['errors'] is None
     assert type(result.data['login']['token']) == str
 
 
@@ -178,10 +178,8 @@ def test_login_mutation_error(rf):
     query = """
     mutation {
         login(
-            input: {
-                email: "eins@zwei.de",
-                password: "123"
-            }
+            email: "eins@zwei.de",
+            password: "123"
         ) {
             success
             errors
@@ -191,7 +189,7 @@ def test_login_mutation_error(rf):
     """
 
     result = schema.execute(query, context_value=request)
-    assert not result.errors
+    assert result.data['login']['errors'] is not None
     assert result.data['login']['token'] is None
     assert result.data['login']['success'] is False
 
@@ -207,9 +205,7 @@ def test_refresh_token_success(client, token):
     query = """
     mutation {
         refreshToken(
-            input: {
-                token: "%s",
-            }
+            token: "%s",
         ) {
             success
             errors
@@ -233,9 +229,7 @@ def test_reset_password_success(client):
     query = """
     mutation {
         resetPassword(
-            input: {
-                email: "eins@zwei.de"
-            }
+            email: "eins@zwei.de"
         ) {
             success
         }
@@ -261,13 +255,11 @@ def test_reset_password_confirm_success(client, user):
     query = """
     mutation {
         resetPasswordConfirm(
-            input: {
-                email: "eins@zwei.de"
-                uid: "%s"
-                token: "%s"
-                newPassword: "666"
-                reNewPassword: "666"
-            }
+            email: "eins@zwei.de"
+            uid: "%s"
+            token: "%s"
+            newPassword: "666"
+            reNewPassword: "666"
         ) {
             success
         }
@@ -291,13 +283,11 @@ def test_reset_password_confirm_password_error(client, user):
     query = """
     mutation {
         resetPasswordConfirm(
-            input: {
-                email: "eins@zwei.de"
-                uid: "%s"
-                token: "%s"
-                newPassword: "666"
-                reNewPassword: "6667"
-            }
+            email: "eins@zwei.de"
+            uid: "%s"
+            token: "%s"
+            newPassword: "666"
+            reNewPassword: "6667"
         ) {
             success
         }
@@ -321,13 +311,11 @@ def test_reset_password_confirm_token_error(client, user):
     query = """
     mutation {
         resetPasswordConfirm(
-            input: {
-                email: "eins@zwei.de"
-                uid: "%s"
-                token: "%s"
-                newPassword: "666"
-                reNewPassword: "666"
-            }
+            email: "eins@zwei.de"
+            uid: "%s"
+            token: "%s"
+            newPassword: "666"
+            reNewPassword: "666"
         ) {
             success
         }
@@ -351,13 +339,11 @@ def test_reset_password_confirm_uid_error(client, user):
     query = """
     mutation {
         resetPasswordConfirm(
-            input: {
-                email: "eins@zwei.de"
-                uid: "%s"
-                token: "%s"
-                newPassword: "666"
-                reNewPassword: "666"
-            }
+            email: "eins@zwei.de"
+            uid: "%s"
+            token: "%s"
+            newPassword: "666"
+            reNewPassword: "666"
         ) {
             success
         }
@@ -383,10 +369,8 @@ def test_delete_account_unauthenticated_error(client):
     query = """
     mutation {
         deleteAccount(
-            input: {
-                email: "eins@zwei.de",
-                password: "123"
-            }
+            email: "eins@zwei.de",
+            password: "123"
         ) {
             success
             errors
@@ -408,10 +392,8 @@ def test_delete_account_authenticated_user_error(client, token):
     query = """
     mutation {
         deleteAccount(
-            input: {
-                email: "wrong@user.de",
-                password: "123"
-            }
+            email: "wrong@user.de",
+            password: "123"
         ) {
             success
             errors
@@ -433,10 +415,8 @@ def test_delete_account_authenticated_password_error(client, token):
     query = """
     mutation {
         deleteAccount(
-            input: {
-                email: "eins@zwei.de",
-                password: "wrong_password"
-            }
+            email: "eins@zwei.de",
+            password: "wrong_password"
         ) {
             success
             errors
@@ -459,10 +439,8 @@ def test_delete_account_authenticated_success(client, token, user):
     query = """
     mutation {
         deleteAccount(
-            input: {
-                email: "eins@zwei.de",
-                password: "123"
-            }
+            email: "eins@zwei.de",
+            password: "123"
         ) {
             success
             errors

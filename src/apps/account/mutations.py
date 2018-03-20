@@ -1,6 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 
-from djoser import settings as djoser_settings
+from djoser.conf import settings as djoser_settings
 from djoser.utils import decode_uid
 
 import graphene
@@ -17,7 +17,7 @@ from .serializers import PasswordResetConfirmRetypeSerializer
 from .utils import send_activation_email, send_password_reset_email
 
 
-class Register(relay.ClientIDMutation):
+class Register(graphene.Mutation):
     """
     Mutation to register a user
     """
@@ -29,12 +29,7 @@ class Register(relay.ClientIDMutation):
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
 
-    @classmethod
-    def mutate_and_get_payload(cls, input, context, info):
-        email = input.get('email')
-        password = input.get('password')
-        password_repeat = input.get('password_repeat')
-
+    def mutate(self, info, email, password, password_repeat):
         if password == password_repeat:
             try:
                 user = UserModel.objects.create(
@@ -44,16 +39,17 @@ class Register(relay.ClientIDMutation):
                 user.set_password(password)
                 user.save()
                 if djoser_settings.get('SEND_ACTIVATION_EMAIL'):
-                    send_activation_email(user, context)
+                    send_activation_email(user, info.context)
                 return Register(success=bool(user.id))
-            except:
+            # TODO: specify exception
+            except Exception:
                 errors = ["email", "Email already registered."]
                 return Register(success=False, errors=errors)
         errors = ["password", "Passwords don't match."]
         return Register(success=False, errors=errors)
 
 
-class Activate(relay.ClientIDMutation):
+class Activate(graphene.Mutation):
     """
     Mutation to activate a user's registration
     """
@@ -64,10 +60,7 @@ class Activate(relay.ClientIDMutation):
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
 
-    @classmethod
-    def mutate_and_get_payload(cls, input, context, info):
-        token = input.get('token')
-        uid = input.get('uid')
+    def mutate(self, info, token, uid):
 
         try:
             uid = decode_uid(uid)
@@ -79,11 +72,11 @@ class Activate(relay.ClientIDMutation):
             user.save()
             return Activate(success=True, errors=None)
 
-        except:
+        except Exception:
             return Activate(success=False, errors=['unknown user'])
 
 
-class Login(relay.ClientIDMutation):
+class Login(graphene.Mutation):
     """
     Mutation to login a user
     """
@@ -96,9 +89,8 @@ class Login(relay.ClientIDMutation):
     token = graphene.String()
     user = graphene.Field(User)
 
-    @classmethod
-    def mutate_and_get_payload(cls, input, context, info):
-        user = {'email': input['email'], 'password': input['password']}
+    def mutate(self, info, email, password):
+        user = {'email': email, 'password': password}
         serializer = JSONWebTokenSerializer(data=user)
         if serializer.is_valid():
             token = serializer.object['token']
@@ -112,7 +104,7 @@ class Login(relay.ClientIDMutation):
                 )
 
 
-class RefreshToken(relay.ClientIDMutation):
+class RefreshToken(graphene.Mutation):
     """
     Mutation to reauthenticate a user
     """
@@ -123,9 +115,8 @@ class RefreshToken(relay.ClientIDMutation):
     errors = graphene.List(graphene.String)
     token = graphene.String()
 
-    @classmethod
-    def mutate_and_get_payload(cls, input, context, info):
-        serializer = RefreshJSONWebTokenSerializer(data=input)
+    def mutate(self, info, token):
+        serializer = RefreshJSONWebTokenSerializer(data={'token': token})
         if serializer.is_valid():
             return RefreshToken(
                 success=True,
@@ -140,7 +131,7 @@ class RefreshToken(relay.ClientIDMutation):
                 )
 
 
-class ResetPassword(relay.ClientIDMutation):
+class ResetPassword(graphene.Mutation):
     """
     Mutation for requesting a password reset email
     """
@@ -150,17 +141,16 @@ class ResetPassword(relay.ClientIDMutation):
 
     success = graphene.Boolean()
 
-    @classmethod
-    def mutate_and_get_payload(cls, input, context, info):
+    def mutate(self, info, email):
         try:
-            user = User.objects.get(email=input.get('user'))
-            send_password_reset_email(context, user)
+            user = User.objects.get(email=email)
+            send_password_reset_email(info.context, user)
             return ResetPassword(success=True)
-        except:
+        except Exception:
             return ResetPassword(success=True)
 
 
-class ResetPasswordConfirm(relay.ClientIDMutation):
+class ResetPasswordConfirm(graphene.Mutation):
     """
     Mutation for requesting a password reset email
     """
@@ -175,9 +165,14 @@ class ResetPasswordConfirm(relay.ClientIDMutation):
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
 
-    @classmethod
-    def mutate_and_get_payload(cls, input, context, info):
-        serializer = PasswordResetConfirmRetypeSerializer(data=input)
+    def mutate(self, info, uid, token, email, new_password, re_new_password):
+        serializer = PasswordResetConfirmRetypeSerializer(data={
+            'uid': uid,
+            'token': token,
+            'email': email,
+            'new_password': new_password,
+            're_new_password': re_new_password,
+        })
         if serializer.is_valid():
             serializer.user.set_password(serializer.data['new_password'])
             serializer.user.save()
@@ -187,7 +182,7 @@ class ResetPasswordConfirm(relay.ClientIDMutation):
                 success=False, errors=[serializer.errors])
 
 
-class DeleteAccount(relay.ClientIDMutation):
+class DeleteAccount(graphene.Mutation):
     """
     Mutation to delete an account
     """
@@ -198,16 +193,15 @@ class DeleteAccount(relay.ClientIDMutation):
     success = graphene.Boolean()
     errors = graphene.List(graphene.String)
 
-    @classmethod
-    def mutate_and_get_payload(cls, input, context, info):
-        is_authenticated = context.user.is_authenticated()
+    def mutate(self, info, email, password):
+        is_authenticated = info.context.user.is_authenticated()
         if not is_authenticated:
             errors = ['unauthenticated']
-        elif is_authenticated and not input['email'] == context.user.email:
+        elif is_authenticated and not email == info.context.user.email:
             errors = ['forbidden']
-        elif not context.user.check_password(input['password']):
+        elif not info.context.user.check_password(password):
             errors = ['wrong password']
         else:
-            context.user.delete()
+            info.context.user.delete()
             return DeleteAccount(success=True)
         return DeleteAccount(success=False, errors=errors)

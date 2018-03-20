@@ -14,11 +14,10 @@ from apps.account.schema import User, Viewer
 
 class RootQuery(graphene.ObjectType):
     viewer = graphene.Field(Viewer)
-    node = graphene.relay.Node.Field()
 
-    def resolve_viewer(self, args, context, info):
-        if context.user.is_authenticated():
-            return context.user
+    def resolve_viewer(self, info, **kwargs):
+        if info.context.user.is_authenticated():
+            return info.context.user
         return None
 
 

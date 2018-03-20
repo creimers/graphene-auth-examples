@@ -1,15 +1,12 @@
-from djoser import utils
+from djoser.compat import get_user_email, get_user_email_field_name
+from djoser.email import ActivationEmail, PasswordResetEmail
 
 
 def send_activation_email(user, request):
-    email_factory = utils.UserActivationEmailFactory.from_request(
-        request, user=user)
-    email = email_factory.create()
-    email.send()
+    to = [get_user_email(user)]
+    ActivationEmail(request, {'user': user}).send(to)
 
 
 def send_password_reset_email(user, request):
-    email_factory = utils.UserPasswordResetEmailFactory.from_request(
-        request, user=user)
-    email = email_factory.create()
-    email.send()
+    to = [get_user_email(user)]
+    PasswordResetEmail(request, {'user': user}).send(to)
