@@ -22,7 +22,7 @@ def get_user_jwt(request):
         if user_jwt is not None:
             # store the first part from the tuple (user, obj)
             user = user_jwt[0]
-    except:
+    except Exception:
         pass
 
     return user or AnonymousUser()
