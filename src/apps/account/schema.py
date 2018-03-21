@@ -1,4 +1,4 @@
-from graphene import relay, AbstractType, ObjectType, Field
+from graphene import relay, ObjectType, Field
 from graphene_django.types import DjangoObjectType
 from graphene_django.filter.fields import DjangoFilterConnectionField
 
@@ -18,7 +18,7 @@ class User(DjangoObjectType):
         interfaces = (relay.Node, )
 
 
-class UserQuery(AbstractType):
+class UserQuery(object):
     """
     what is an abstract type?
     http://docs.graphene-python.org/en/latest/types/abstracttypes/
@@ -31,6 +31,6 @@ class Viewer(ObjectType):
     user = Field(User)
 
     def resolve_user(self, info, **kwargs):
-        if info.context.user.is_authenticated():
+        if info.context.user.is_authenticated:
             return info.context.user
         return None

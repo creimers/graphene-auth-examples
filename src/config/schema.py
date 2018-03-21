@@ -16,7 +16,7 @@ class RootQuery(graphene.ObjectType):
     viewer = graphene.Field(Viewer)
 
     def resolve_viewer(self, info, **kwargs):
-        if info.context.user.is_authenticated():
+        if info.context.user.is_authenticated:
             return info.context.user
         return None
 

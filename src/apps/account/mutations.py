@@ -21,7 +21,7 @@ class Register(graphene.Mutation):
     """
     Mutation to register a user
     """
-    class Input:
+    class Arguments:
         email = graphene.String(required=True)
         password = graphene.String(required=True)
         password_repeat = graphene.String(required=True)
@@ -53,7 +53,7 @@ class Activate(graphene.Mutation):
     """
     Mutation to activate a user's registration
     """
-    class Input:
+    class Arguments:
         token = graphene.String(required=True)
         uid = graphene.String(required=True)
 
@@ -80,7 +80,7 @@ class Login(graphene.Mutation):
     """
     Mutation to login a user
     """
-    class Input:
+    class Arguments:
         email = graphene.String(required=True)
         password = graphene.String(required=True)
 
@@ -108,7 +108,7 @@ class RefreshToken(graphene.Mutation):
     """
     Mutation to reauthenticate a user
     """
-    class Input:
+    class Arguments:
         token = graphene.String(required=True)
 
     success = graphene.Boolean()
@@ -136,7 +136,7 @@ class ResetPassword(graphene.Mutation):
     Mutation for requesting a password reset email
     """
 
-    class Input:
+    class Arguments:
         email = graphene.String(required=True)
 
     success = graphene.Boolean()
@@ -155,7 +155,7 @@ class ResetPasswordConfirm(graphene.Mutation):
     Mutation for requesting a password reset email
     """
 
-    class Input:
+    class Arguments:
         uid = graphene.String(required=True)
         token = graphene.String(required=True)
         email = graphene.String(required=True)
@@ -186,7 +186,7 @@ class DeleteAccount(graphene.Mutation):
     """
     Mutation to delete an account
     """
-    class Input:
+    class Arguments:
         email = graphene.String(required=True)
         password = graphene.String(required=True)
 
@@ -194,7 +194,7 @@ class DeleteAccount(graphene.Mutation):
     errors = graphene.List(graphene.String)
 
     def mutate(self, info, email, password):
-        is_authenticated = info.context.user.is_authenticated()
+        is_authenticated = info.context.user.is_authenticated
         if not is_authenticated:
             errors = ['unauthenticated']
         elif is_authenticated and not email == info.context.user.email:
