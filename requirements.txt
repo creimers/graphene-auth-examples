@@ -2,7 +2,7 @@ Django==1.11.11
 
 # REST
 djangorestframework==3.9.4
-djangorestframework-filters==0.8.0
+djangorestframework-filters==0.11.1
 djangorestframework-jwt==1.9.0
 djoser==1.1.5
 django-extra-fields
