@@ -15,7 +15,7 @@ Pillow==3.2.0
 # dev
 ipdb
 
-uWSGI==2.0.17
+uWSGI==2.0.18
 dj-database-url==0.4.1
 psycopg2==2.6.1
 
