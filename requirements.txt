@@ -1,4 +1,4 @@
-Django==1.11.11
+Django==1.11.20
 
 # REST
 djangorestframework==3.9.4
