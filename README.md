@@ -1,3 +1,5 @@
+🚨Deprecated! Check out the excellent [django-graphql-jwt](https://github.com/flavors/django-graphql-jwt).
+
 # django graphene authentication example - work in progress
 
 In this repo, I'm trying to figure out how to do authentication and authorization with graphql and [graphene-django](https://github.com/graphql-python/graphene-django).
